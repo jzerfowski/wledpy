@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "wledpy"
+version = "0.0.2"
+description = "Python module to interface with WLED JSON APIs"
+authors = ["Jonathon Davis <pctechjon@gmail.com>", "Jan Zerfowski"]
+license = "Apache Software License"
+readme = "README.md"
+repository = "https://github.com/jzerfowski/wledpy"
+
+classifiers = [
+    'Programming Language :: Python',
+    'Natural Language :: English',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    ]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
