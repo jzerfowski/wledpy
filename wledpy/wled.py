@@ -1,5 +1,7 @@
 from requests import get, post
+import requests
 import json
+
 
 def clip(value, lower, upper):
     return lower if value < lower else upper if value > upper else value
@@ -12,12 +14,11 @@ class Wled():
         host: IP address or hostname of the WLED controller
     """
 
-    host = None
-
-    def __init__(self, host):
+    def __init__(self, host, timeout=5):
         self.host = host
+        self.timeout = timeout
 
-        self.effects = self.get_effects()
+        self._effects = self.get_effects()
 
         self._name = None
         self._state = None
@@ -26,19 +27,23 @@ class Wled():
         self._effect = None
         self._color = None
 
-    def get_all(self):
+    def get_request(self, url, params=None):
+        return requests.get(url, params=params, timeout=self.timeout)
+
+
+    def get_all(self) -> dict:
         """Get all JSON objects for WLED controller"""
-        request = get(f"http://{self.host}/json")
+        request = get(f"http://{self.host}/json", timeout=self.timeout)
         return json.loads(request.text)
 
-    def get_info(self):
+    def get_info(self) -> dict:
         """Get info about the WLED controller"""
-        request = get(f"http://{self.host}/json/info")
+        request = get(f"http://{self.host}/json/info", timeout=self.timeout)
         return json.loads(request.text)
 
-    def get_state(self):
+    def get_state(self) -> dict:
         """Get the current state of the WLED controller"""
-        request = get(f"http://{self.host}/json/state")
+        request = get(f"http://{self.host}/json/state", timeout=self.timeout)
         return json.loads(request.text)
 
     def get_effects(self):
@@ -49,7 +54,7 @@ class Wled():
             list of effects available to the WLED controller
         """
 
-        request = get(f"http://{self.host}/json/eff")
+        request = get(f"http://{self.host}/json/eff", timeout=self.timeout)
         return json.loads(request.text)
 
     def set_state(self, state):
@@ -62,8 +67,8 @@ class Wled():
         Returns:
             Request response object from Requests module
         """
-        request = post(f"http://{self.host}/json/state", data=json.dumps(state))
-        return request
+        response = post(f"http://{self.host}/json/state", data=json.dumps(state), timeout=self.timeout)
+        return response
 
     def is_valid(self):
         """Return True if host is a valid WLED controller"""
@@ -76,18 +81,18 @@ class Wled():
         except:
             return False
 
-
     def update(self):
         """
         Update parameters for the WLED controller
         """
 
         data = self.get_all()
+        self._effects = data["effects"]
+        self._name = data["info"]["name"]
+
         self._state = data["state"]["on"]
         self._brightness = data["state"]["bri"]
         self._transition = data["state"]["transition"]
-        self._effects = data["effects"]
-        self._name = data["info"]["name"]
         self._color = data["state"]["seg"][0]["col"][0]
         self._effect = self._effects[data["state"]["seg"][0]["fx"]]
 
@@ -97,24 +102,29 @@ class Wled():
         state = {"on": False}
         response = self.set_state(state)
         response_json = json.loads(response.text)
-        self._state = response_json["state"]["on"]
+        # self._state = response_json["state"]["on"]
 
-        if self._state == False:
-            return True
-        else:
-            return False
+        return response_json['success']
+
+        # if self._state == False:
+        #     return True
+        # else:
+        #     return False
 
     def turn_on(self):
         """Send a payload to the WLED controller to turn the lights on"""
         state = {"on": True}
         response = self.set_state(state)
         response_json = json.loads(response.text)
-        self._state = response_json["state"]["on"]
+        # self._state = response_json["state"]["on"]
 
-        if self._state == True:
-            return True
-        else:
-            return False
+        return response_json['success']
+
+        #
+        # if self._state == True:
+        #     return True
+        # else:
+        #     return False
 
     def is_on(self):
         """Return True if WLED strip is on. False if WLED strip is off."""
