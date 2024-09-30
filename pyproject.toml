@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wledpy"
-version = "0.0.2"
+version = "0.0.3"
 description = "Python module to interface with WLED JSON APIs"
 authors = ["Jonathon Davis <pctechjon@gmail.com>", "Jan Zerfowski"]
 license = "Apache Software License"
