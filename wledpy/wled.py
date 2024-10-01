@@ -18,7 +18,7 @@ class Wled():
         self.host = host
         self.timeout = timeout
 
-        self._effects = self.get_effects()
+        self._effects = None
 
         self._name = None
         self._state = None
@@ -57,7 +57,27 @@ class Wled():
         request = get(f"http://{self.host}/json/eff", timeout=self.timeout)
         return json.loads(request.text)
 
-    def set_state(self, state):
+    def get_presets(self):
+        request = get(f"http://{self.host}/presets.json", timeout=self.timeout)
+        return json.loads(request.text)
+
+    def set_preset_by_name(self, name: str):
+        presets = self.get_presets()
+        preset_id = None
+
+        for _id, preset_dict in presets.items():
+            if preset_dict and (name.lower() == preset_dict['n'].lower()):
+                preset_id = _id
+                break
+
+        return self.set_preset(preset_id)
+
+    def set_preset(self, preset: int | str):
+        state = {'ps': preset}
+        return self.set_state(state)
+
+
+    def set_state(self, state: dict):
         """
         Send a state update command to change the state of the WLED controller
 
@@ -244,6 +264,7 @@ class Wled():
             List of RGB/RGBW values representing color values 0-255
         """
         return self.get_state()["seg"][0]["col"][0]
+
 
 
     @property
